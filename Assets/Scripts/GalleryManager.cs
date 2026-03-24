@@ -5,13 +5,14 @@ using UnityEngine.UI;
 using System.Collections;
 using System.Collections.Generic;
 using Unity.VisualScripting;
+using TMPro;
 
 public class GalleryManager : MonoBehaviour
 {
     public static GalleryManager Instance;
     public bool multiMode = false;
     public Button deleteButton;
-    public Text warningText;
+    public TextMeshProUGUI warningText;
 
     private List<PhotoItem> selectedPhotos = new List<PhotoItem>();
 
@@ -27,13 +28,13 @@ public class GalleryManager : MonoBehaviour
         warningText.gameObject.SetActive(false);
     }
 
-    public void EnterMultiSelect(PhotoItem firstPhoto)
+    public void EnterMultiSelect()
     {
         if (multiMode)
             return;
 
         multiMode = true;
-        SelectPhoto(firstPhoto);
+        selectedPhotos.Clear();
         UpdateAllPhotoState();
 
     }

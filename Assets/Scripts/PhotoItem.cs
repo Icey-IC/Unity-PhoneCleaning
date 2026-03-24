@@ -6,7 +6,7 @@ using UnityEngine.EventSystems;
 using System.Collections;
 using System;
 
-public class PhotoItem : MonoBehaviour, IPointerDownHandler, IPointerUpHandler
+public class PhotoItem : MonoBehaviour, IPointerDownHandler, IPointerUpHandler,IPointerClickHandler
 {
     public bool canDelete = true;
     public Image selectOverlay;
@@ -27,7 +27,9 @@ public class PhotoItem : MonoBehaviour, IPointerDownHandler, IPointerUpHandler
             if(pressTime>=longPressTime)
             {
                 isPointerDown = false;
-                GalleryManager.Instance.EnterMultiSelect(this);
+                GalleryManager.Instance.EnterMultiSelect();
+                ToggleSelect();
+
             }
         }
     }
@@ -45,7 +47,10 @@ public class PhotoItem : MonoBehaviour, IPointerDownHandler, IPointerUpHandler
     public void ToggleSelect()
     {
         if (!GalleryManager.Instance.multiMode)
-            return;
+        {
+            GalleryManager.Instance.EnterMultiSelect();
+        }
+           
         if(!canDelete)
         {
             GalleryManager.Instance.ShowWarning();
@@ -70,7 +75,7 @@ public class PhotoItem : MonoBehaviour, IPointerDownHandler, IPointerUpHandler
         selectOverlay.gameObject.SetActive(isSelected);
         if(GalleryManager.Instance.multiMode)
         {
-            multiMask.gameObject.SetActive(isSelected);
+            multiMask.gameObject.SetActive(!isSelected);
 
         }
         else
@@ -82,5 +87,13 @@ public class PhotoItem : MonoBehaviour, IPointerDownHandler, IPointerUpHandler
     public bool IsSelected()
     {
         return isSelected;
+    }
+    
+    public void OnPointerClick(PointerEventData eventData)
+    {
+        if(GalleryManager.Instance.multiMode)
+        {
+            ToggleSelect();
+        }
     }
 }
