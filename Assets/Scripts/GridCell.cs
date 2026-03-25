@@ -2,14 +2,16 @@ using UnityEngine;
 
 public class GridCell : MonoBehaviour
 {
-    public Color normalColor = new Color(0.8f, 0.8f, 0.8f, 0.5f); // 默认半透明灰色
-    public Color hoverColor = Color.white;                        // 鼠标悬停变白
+    public Color normalColor = new Color(0.8f, 0.8f, 0.8f, 0.5f);
+    public Color hoverColor = Color.white;
 
     private SpriteRenderer sr;
-    public AppIcon currentIcon; // 当前占据这个格子的图标
 
-    // 判断当前格子是否为空
-    public bool IsEmpty => currentIcon == null;
+    public AppIcon currentIcon;       // 当前占据格子的软件
+    public FolderIcon currentFolder;  // 当前占据格子的文件夹
+
+    // 格子为空的条件：软件和文件夹都没有
+    public bool IsEmpty => currentIcon == null && currentFolder == null;
 
     void Awake()
     {
@@ -17,33 +19,46 @@ public class GridCell : MonoBehaviour
         sr.color = normalColor;
     }
 
-    // 鼠标悬停且为空时高亮
     public void Highlight()
     {
         if (IsEmpty)
-        {
             sr.color = hoverColor;
-        }
     }
 
-    // 取消高亮
     public void Unhighlight()
     {
         sr.color = normalColor;
     }
 
-    // 将图标放置在这个格子上
+    // 放置软件
     public void SetIcon(AppIcon icon)
     {
         currentIcon = icon;
-        // 让图标的坐标完美吸附到格子中心
-        icon.transform.position = transform.position;
+        Vector3 snapPos = transform.position;
+        snapPos.z = -1f;
+        icon.transform.position = snapPos;
         icon.currentCell = this;
     }
 
-    // 移除图标
+    // 移除软件
     public void RemoveIcon()
     {
         currentIcon = null;
+    }
+
+    // 放置文件夹
+    public void SetFolder(FolderIcon folder)
+    {
+        currentFolder = folder;
+        Vector3 snapPos = transform.position;
+        snapPos.z = -1f;
+        folder.transform.position = snapPos;
+        folder.currentCell = this;
+    }
+
+    // 移除文件夹
+    public void RemoveFolder()
+    {
+        currentFolder = null;
     }
 }

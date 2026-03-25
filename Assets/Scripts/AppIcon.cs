@@ -35,6 +35,8 @@ public class AppIcon : MonoBehaviour
     private const float movementThreshold = 5f;
     private Vector3 mouseDownScreenPos;     // 按下时的屏幕坐标
 
+    private FolderIcon hoveredFolder = null; // 当前悬停的文件夹
+
     void Awake()
     {
         sr = GetComponent<SpriteRenderer>();
@@ -187,44 +189,72 @@ public class AppIcon : MonoBehaviour
     void DragUpdate()
     {
         Vector3 mousePos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
-        mousePos.z = 0;
+        mousePos.z = -1;
         transform.position = mousePos;
 
         Collider2D hitCollider = Physics2D.OverlapPoint(mousePos, gridLayer);
 
         if (hitCollider != null)
         {
+            // 优先检测是否是文件夹
+            FolderIcon folder = hitCollider.GetComponent<FolderIcon>();
             GridCell cell = hitCollider.GetComponent<GridCell>();
-            if (cell != hoveredCell)
+
+            if (folder != null)
             {
-                if (hoveredCell != null) hoveredCell.Unhighlight();
-                hoveredCell = cell;
-                hoveredCell.Highlight();
+                // 悬停在文件夹上
+                if (folder != hoveredFolder)
+                {
+                    // 离开旧的格子高亮
+                    if (hoveredCell != null) { hoveredCell.Unhighlight(); hoveredCell = null; }
+                    // 离开旧文件夹
+                    if (hoveredFolder != null) hoveredFolder.OnDragExit();
+
+                    hoveredFolder = folder;
+                    hoveredFolder.OnDragEnter();
+                }
+            }
+            else if (cell != null)
+            {
+                // 悬停在普通格子上
+                if (hoveredFolder != null) { hoveredFolder.OnDragExit(); hoveredFolder = null; }
+
+                if (cell != hoveredCell)
+                {
+                    if (hoveredCell != null) hoveredCell.Unhighlight();
+                    hoveredCell = cell;
+                    hoveredCell.Highlight();
+                }
             }
         }
         else
         {
-            if (hoveredCell != null)
-            {
-                hoveredCell.Unhighlight();
-                hoveredCell = null;
-            }
+            if (hoveredCell != null) { hoveredCell.Unhighlight(); hoveredCell = null; }
+            if (hoveredFolder != null) { hoveredFolder.OnDragExit(); hoveredFolder = null; }
         }
     }
-
     void FinishDrag()
     {
         sr.sortingOrder = originalSortingOrder;
         isDragging = false;
 
-        if (hoveredCell != null && hoveredCell.IsEmpty)
+        if (hoveredFolder != null)
+        {
+            // 放入文件夹
+            hoveredFolder.ReceiveIcon(this);
+            hoveredFolder = null;
+            hoveredCell = null;
+        }
+        else if (hoveredCell != null && hoveredCell.IsEmpty)
         {
             hoveredCell.Unhighlight();
             hoveredCell.SetIcon(this);
+            hoveredCell = null;
         }
         else
         {
-            if (hoveredCell != null) hoveredCell.Unhighlight();
+            if (hoveredCell != null) { hoveredCell.Unhighlight(); hoveredCell = null; }
+            if (hoveredFolder != null) { hoveredFolder.OnDragExit(); hoveredFolder = null; }
 
             if (currentCell != null)
                 currentCell.SetIcon(this);
@@ -232,10 +262,8 @@ public class AppIcon : MonoBehaviour
                 transform.position = startDragPos;
         }
 
-        hoveredCell = null;
         ScaleTo(originalScale);
     }
-
     void OnAppClicked()
     {
         Debug.Log($"{gameObject.name} 被单击，进入App");

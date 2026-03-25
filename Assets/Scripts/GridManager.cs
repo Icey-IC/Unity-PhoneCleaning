@@ -1,33 +1,44 @@
 using UnityEngine;
+using System.Collections.Generic;
+
+[System.Serializable]
+public class CellIconMapping
+{
+    public int row;
+    public int col;
+    public AppIcon icon;       // 软件图标，和下面二选一
+    public FolderIcon folder;  // 文件夹图标，和上面二选一
+}
 
 public class GridManager : MonoBehaviour
 {
     public GameObject cellPrefab;
 
     [Header("自定义行和列的坐标")]
-    [Tooltip("定义5行的 Y 轴坐标（建议按从上到下的顺序填写）")]
     public float[] rowYPositions = new float[5] { 1.1f, 0f, -0.9f, -1.8f, -3.2f };
-
-    [Tooltip("定义7列的 X 轴坐标（建议按从左到右的顺序填写）")]
     public float[] columnXPositions = new float[5] { -1.6f, -0.8f, 0f, 0.8f, 1.6f };
 
     [Header("最后一行特殊配置")]
-    [Tooltip("勾选后，最后一行将使用下方自定义的列坐标，而不是 columnXPositions")]
     public bool overrideLastRow = true;
-
-    [Tooltip("最后一行的 X 轴坐标（留空则沿用 columnXPositions）")]
     public float[] lastRowColumnXPositions = new float[4] { -1.2f, -0.4f, 0.4f, 1.2f };
+
+    [Header("初始布局配置")]
+    public List<CellIconMapping> initialLayout = new List<CellIconMapping>();
+
+    private GridCell[,] cellGrid;
 
     void Start()
     {
         GenerateGrid();
+        ApplyInitialLayout();
     }
 
     void GenerateGrid()
     {
+        cellGrid = new GridCell[rowYPositions.Length, columnXPositions.Length];
+
         for (int row = 0; row < rowYPositions.Length; row++)
         {
-            // 判断是否是最后一行，且启用了覆盖配置
             bool isLastRow = (row == rowYPositions.Length - 1);
             float[] xPositions = (isLastRow && overrideLastRow && lastRowColumnXPositions.Length > 0)
                 ? lastRowColumnXPositions
@@ -36,8 +47,50 @@ public class GridManager : MonoBehaviour
             for (int col = 0; col < xPositions.Length; col++)
             {
                 Vector2 spawnPos = new Vector2(xPositions[col], rowYPositions[row]);
-                GameObject cell = Instantiate(cellPrefab, spawnPos, Quaternion.identity, transform);
-                cell.name = $"Cell_{row}_{col}";
+                GameObject cellObj = Instantiate(cellPrefab, spawnPos, Quaternion.identity, transform);
+                cellObj.name = $"Cell_{row}_{col}";
+                cellGrid[row, col] = cellObj.GetComponent<GridCell>();
+            }
+        }
+    }
+
+    void ApplyInitialLayout()
+    {
+        foreach (var mapping in initialLayout)
+        {
+            // 边界检查
+            if (mapping.row >= rowYPositions.Length || mapping.col >= columnXPositions.Length)
+            {
+                Debug.LogWarning($"初始布局配置越界：row={mapping.row}, col={mapping.col}");
+                continue;
+            }
+
+            GridCell cell = cellGrid[mapping.row, mapping.col];
+
+            if (cell == null || !cell.IsEmpty)
+            {
+                Debug.LogWarning($"Cell_{mapping.row}_{mapping.col} 不存在或已被占用");
+                continue;
+            }
+
+            // 软件图标和文件夹图标二选一，两个都填或都不填时报警告
+            if (mapping.icon != null && mapping.folder != null)
+            {
+                Debug.LogWarning($"Cell_{mapping.row}_{mapping.col} 同时指定了icon和folder，请只填一个，已跳过");
+                continue;
+            }
+
+            if (mapping.icon != null)
+            {
+                cell.SetIcon(mapping.icon);
+            }
+            else if (mapping.folder != null)
+            {
+                cell.SetFolder(mapping.folder);
+            }
+            else
+            {
+                Debug.LogWarning($"Cell_{mapping.row}_{mapping.col} 未指定任何图标");
             }
         }
     }
