@@ -1,10 +1,8 @@
+// GalleryManager.cs
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
-using System.Collections;
-using System.Collections.Generic;
-using Unity.VisualScripting;
 using TMPro;
 
 public class GalleryManager : MonoBehaviour
@@ -16,7 +14,6 @@ public class GalleryManager : MonoBehaviour
 
     private List<PhotoItem> selectedPhotos = new List<PhotoItem>();
 
-    // Update is called once per frame
     void Awake()
     {
         Instance = this;
@@ -30,20 +27,24 @@ public class GalleryManager : MonoBehaviour
 
     public void EnterMultiSelect()
     {
-        if (multiMode)
-            return;
-
+        if (multiMode) return;
         multiMode = true;
         selectedPhotos.Clear();
-        UpdateAllPhotoState();
-
+        UpdateAllPhotoState(); // 让所有图片刷新到"待选"状态
     }
+
+    public void ExitMultiSelect()
+    {
+        multiMode = false;
+        selectedPhotos.Clear();
+        UpdateAllPhotoState(); // 所有图片回到正常状态
+        deleteButton.interactable = false;
+    }
+
     public void AddSelect(PhotoItem photo)
     {
-        if(!selectedPhotos.Contains(photo))
-        {
+        if (!selectedPhotos.Contains(photo))
             selectedPhotos.Add(photo);
-        }
         UpdateDeleteButton();
     }
 
@@ -51,44 +52,40 @@ public class GalleryManager : MonoBehaviour
     {
         selectedPhotos.Remove(photo);
         UpdateDeleteButton();
-    }
 
-    public void SelectPhoto(PhotoItem photo)
-    {
-        if(!photo.canDelete)
-        {
-            ShowWarning();
-            return;
-
-        }
-        photo.SetSelected(true);
-
-        if(!selectedPhotos.Contains(photo))
-        {
-            selectedPhotos.Add(photo);
-        }
-        UpdateDeleteButton();
+        // 如果全部取消选择，退出multiMode
+        if (selectedPhotos.Count == 0)
+            ExitMultiSelect();
     }
 
     private void UpdateDeleteButton()
     {
         deleteButton.interactable = selectedPhotos.Count > 0;
-
     }
+
     public void UpdateAllPhotoState()
     {
         PhotoItem[] photos = FindObjectsOfType<PhotoItem>();
-        foreach(var p in photos)
-        {
+        foreach (var p in photos)
             p.UpdateVisual();
-        }
     }
+
     public void DeleteSelected()
     {
-        foreach(var photo in selectedPhotos)
+        // 检查是否有不该删的
+        foreach (var photo in selectedPhotos)
         {
-            Destroy(photo.gameObject);
+            if (!photo.canDelete)
+            {
+                ShowWarning();
+                return; // 有不该删的，拒绝删除
+            }
         }
+
+        // 全部合法，执行删除
+        foreach (var photo in selectedPhotos)
+            Destroy(photo.gameObject);
+
         selectedPhotos.Clear();
         deleteButton.interactable = false;
         multiMode = false;
@@ -96,6 +93,7 @@ public class GalleryManager : MonoBehaviour
 
     public void ShowWarning()
     {
+        StopAllCoroutines(); // 防止多次触发叠加
         StartCoroutine(WarningCoroutine());
     }
 
