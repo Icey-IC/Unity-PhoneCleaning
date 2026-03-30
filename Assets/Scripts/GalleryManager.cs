@@ -1,10 +1,10 @@
-// GalleryManager.cs
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using TMPro;
 
+[DefaultExecutionOrder(-1)]
 public class GalleryManager : MonoBehaviour
 {
     public static GalleryManager Instance;
@@ -13,10 +13,14 @@ public class GalleryManager : MonoBehaviour
     public TextMeshProUGUI warningText;
 
     private List<PhotoItem> selectedPhotos = new List<PhotoItem>();
+    // 改为手动注册，不依赖FindObjectsOfType
+    private List<PhotoItem> allPhotos = new List<PhotoItem>();
 
     void Awake()
     {
         Instance = this;
+        allPhotos = new List<PhotoItem>();
+        selectedPhotos = new List<PhotoItem>();
     }
 
     private void Start()
@@ -25,19 +29,43 @@ public class GalleryManager : MonoBehaviour
         warningText.gameObject.SetActive(false);
     }
 
+    // PhotoItem在自己的Start里调用这个注册自己
+    public void RegisterPhoto(PhotoItem photo)
+    {
+        if (!allPhotos.Contains(photo))
+            allPhotos.Add(photo);
+    }
+
+    // PhotoItem销毁时注销
+    public void UnregisterPhoto(PhotoItem photo)
+    {
+        allPhotos.Remove(photo);
+    }
+
     public void EnterMultiSelect()
     {
         if (multiMode) return;
         multiMode = true;
         selectedPhotos.Clear();
-        UpdateAllPhotoState(); // 让所有图片刷新到"待选"状态
+        Debug.Log("EnterMultiSelect时allPhotos数量：" + allPhotos.Count + "，场景总PhotoItem数：" + FindObjectsOfType<PhotoItem>().Length);
+        StartCoroutine(UpdateNextFrame());
+    }
+
+    IEnumerator UpdateNextFrame()
+    {
+        yield return null; // 等一帧，让所有PhotoItem的Awake执行完
+        Debug.Log("延迟后allPhotos数量：" + allPhotos.Count);
+        UpdateAllPhotoState();
     }
 
     public void ExitMultiSelect()
     {
         multiMode = false;
         selectedPhotos.Clear();
-        UpdateAllPhotoState(); // 所有图片回到正常状态
+        // 重置所有图片的选中状态
+        foreach (var p in allPhotos)
+            p.SetSelected(false);
+        UpdateAllPhotoState();
         deleteButton.interactable = false;
     }
 
@@ -52,8 +80,6 @@ public class GalleryManager : MonoBehaviour
     {
         selectedPhotos.Remove(photo);
         UpdateDeleteButton();
-
-        // 如果全部取消选择，退出multiMode
         if (selectedPhotos.Count == 0)
             ExitMultiSelect();
     }
@@ -65,35 +91,43 @@ public class GalleryManager : MonoBehaviour
 
     public void UpdateAllPhotoState()
     {
-        PhotoItem[] photos = FindObjectsOfType<PhotoItem>();
-        foreach (var p in photos)
+        foreach (var p in allPhotos)
+        {
+            Debug.Log("刷新图片：" + p.gameObject.name + " multiMode=" + multiMode);
             p.UpdateVisual();
+        }
+           
     }
 
     public void DeleteSelected()
     {
-        // 检查是否有不该删的
         foreach (var photo in selectedPhotos)
         {
             if (!photo.canDelete)
             {
                 ShowWarning();
-                return; // 有不该删的，拒绝删除
+                return;
             }
         }
 
-        // 全部合法，执行删除
         foreach (var photo in selectedPhotos)
+        {
+            allPhotos.Remove(photo);
             Destroy(photo.gameObject);
+        }
 
         selectedPhotos.Clear();
         deleteButton.interactable = false;
         multiMode = false;
+        // 重置剩余图片状态
+        foreach (var p in allPhotos)
+            p.SetSelected(false);
+        UpdateAllPhotoState();
     }
 
     public void ShowWarning()
     {
-        StopAllCoroutines(); // 防止多次触发叠加
+        StopAllCoroutines();
         StartCoroutine(WarningCoroutine());
     }
 

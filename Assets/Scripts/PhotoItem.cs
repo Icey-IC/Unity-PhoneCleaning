@@ -15,10 +15,22 @@ public class PhotoItem : MonoBehaviour, IPointerDownHandler, IPointerUpHandler, 
     private float longPressTime = 0.5f;
     private bool longPressTriggered = false;
 
+    void Awake()
+    {
+        Debug.Log(gameObject.name + " 注册到GalleryManager");
+        GalleryManager.Instance.RegisterPhoto(this);
+    }
+
     void Start()
     {
         deleteSelect.SetActive(false);
         waitBox.SetActive(false);
+    }
+
+    void OnDestroy()
+    {
+        // 销毁时注销
+        GalleryManager.Instance.UnregisterPhoto(this);
     }
 
     void Update()
@@ -38,7 +50,6 @@ public class PhotoItem : MonoBehaviour, IPointerDownHandler, IPointerUpHandler, 
 
     public void OnPointerDown(PointerEventData eventData)
     {
-        Debug.Log("OnPointerDown触发了");
         isPointerDown = true;
         pressTime = 0f;
         longPressTriggered = false;
@@ -101,6 +112,7 @@ public class PhotoItem : MonoBehaviour, IPointerDownHandler, IPointerUpHandler, 
     public void UpdateVisual()
     {
         bool inMulti = GalleryManager.Instance.multiMode;
+        Debug.Log(gameObject.name + " UpdateVisual，inMulti=" + inMulti + " isSelected=" + isSelected);
 
         if (!inMulti)
         {

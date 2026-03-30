@@ -668,7 +668,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 135e97551da49204d85ca1a1bc4e29f7, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  multiMode: 1
+  multiMode: 0
   deleteButton: {fileID: 1635785852}
   warningText: {fileID: 652810562}
 --- !u!4 &1343614628
@@ -1100,6 +1100,10 @@ PrefabInstance:
       propertyPath: m_AnchoredPosition.y
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 3038431828551280031, guid: ce5d6d9a23d25c142964f212da188aef, type: 3}
+      propertyPath: m_Name
+      value: "\u5DE6\u4E0A\u89D2\u7684\u8FB9\u6846"
+      objectReference: {fileID: 0}
     - target: {fileID: 3103550390804659368, guid: ce5d6d9a23d25c142964f212da188aef, type: 3}
       propertyPath: m_AnchorMax.y
       value: 0
@@ -1391,6 +1395,10 @@ PrefabInstance:
     - target: {fileID: 5865437813416067375, guid: ce5d6d9a23d25c142964f212da188aef, type: 3}
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5986524628444539099, guid: ce5d6d9a23d25c142964f212da188aef, type: 3}
+      propertyPath: m_IsActive
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 6140001163747436619, guid: ce5d6d9a23d25c142964f212da188aef, type: 3}
       propertyPath: m_IsActive
@@ -1825,7 +1833,8 @@ PrefabInstance:
       value: 0
       objectReference: {fileID: 0}
     m_RemovedComponents: []
-    m_RemovedGameObjects: []
+    m_RemovedGameObjects:
+    - {fileID: 5986524628444539099, guid: ce5d6d9a23d25c142964f212da188aef, type: 3}
     m_AddedGameObjects:
     - targetCorrespondingSourceObject: {fileID: 5865437813416067375, guid: ce5d6d9a23d25c142964f212da188aef, type: 3}
       insertIndex: -1
