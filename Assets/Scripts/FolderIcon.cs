@@ -1,4 +1,4 @@
-using UnityEngine;
+ï»¿using UnityEngine;
 using System.Collections;
 using System.Collections.Generic;
 
@@ -6,14 +6,14 @@ public class FolderIcon : MonoBehaviour
 {
     public LayerMask gridLayer;
 
-    [Header("Ëõ·Å·´À¡ÅäÖÃ")]
+    [Header("ç¼©æ”¾åé¦ˆé…ç½®")]
     public float dragHoverScale = 1.1f;
     public float scaleAnimDuration = 0.1f;
 
-    [Header("Ãæ°åÅäÖÃ")]
+    [Header("é¢æ¿é…ç½®")]
     public FolderPanel folderPanel;
 
-    [Header("Ô¤ÀÀÍ¼±êÅäÖÃ")]
+    [Header("é¢„è§ˆå›¾æ ‡é…ç½®")]
     public float previewScale = 0.3f;
     public Transform previewRoot;
 
@@ -30,15 +30,15 @@ public class FolderIcon : MonoBehaviour
 
     private static readonly Vector3[] previewPositions = new Vector3[]
     {
-        new Vector3(-0.18f,  0.18f, -0.1f),
-        new Vector3(0f,      0.18f, -0.1f),
-        new Vector3(0.18f,   0.18f, -0.1f),
-        new Vector3(-0.18f,  0f,    -0.1f),
-        new Vector3(0f,      0f,    -0.1f),
-        new Vector3(0.18f,   0f,    -0.1f),
-        new Vector3(-0.18f, -0.18f, -0.1f),
-        new Vector3(0f,     -0.18f, -0.1f),
-        new Vector3(0.18f,  -0.18f, -0.1f),
+        new Vector3(-1f,    1f, 0f),
+        new Vector3(0f,      1f, 0f),
+        new Vector3(1f,   1f, 0f),
+        new Vector3(-1f,  0f,    0f),
+        new Vector3(0f,      0f,    0f),
+        new Vector3(1f,   0f,    0f),
+        new Vector3(-1f, -1f, 0f),
+        new Vector3(0f,     -1f, 0f),
+        new Vector3(1f,  -1f, 0f),
     };
 
     void Awake()
@@ -49,12 +49,10 @@ public class FolderIcon : MonoBehaviour
 
         if (folderPanel != null)
         {
-            // ½«Ãæ°å´Ó¸¸ÎïÌå²ã¼¶ÖĞÍÑÀë£¬Ê¹Æä²»ÊÜFolderIconµÄtransformÓ°Ïì
             folderPanel.transform.SetParent(null);
             folderPanel.Init(this);
         }
     }
-
     void OnMouseUp()
     {
         if (isPanelOpen) return;
@@ -63,14 +61,20 @@ public class FolderIcon : MonoBehaviour
 
     public void OpenPanel()
     {
+        if (isPanelOpen) return;
+
         isPanelOpen = true;
         folderPanel.Show();
     }
 
     public void ClosePanel()
     {
+        if (!isPanelOpen) return;
+
         isPanelOpen = false;
-        folderPanel.Hide();
+
+        if (folderPanel != null)
+            folderPanel.Hide();
     }
 
     public void OnDragEnter()
@@ -114,20 +118,31 @@ public class FolderIcon : MonoBehaviour
 
             GameObject preview = new GameObject($"Preview_{i}");
             preview.transform.SetParent(previewRoot);
+
+            // ç”¨localPositionè€Œä¸æ˜¯worldPositionï¼Œzè½´è®¾ä¸ºè´Ÿå€¼ç¡®ä¿æ˜¾ç¤ºåœ¨æ–‡ä»¶å¤¹å›¾æ ‡å‰é¢
             preview.transform.localPosition = previewPositions[i];
+
+            Vector3 pos = preview.transform.localPosition;
+            pos.z = -0.2f; // æ¯”folderé å‰ä¸€ç‚¹
+            preview.transform.localPosition = pos;
+            
             preview.transform.localScale = Vector3.one * previewScale;
+            preview.transform.localRotation = Quaternion.identity;
 
             SpriteRenderer previewSr = preview.AddComponent<SpriteRenderer>();
             previewSr.sprite = original.sprite;
-            previewSr.sortingOrder = originalSortingOrder + 1;
         }
     }
-
     void ScaleTo(Vector3 targetScale, System.Action onComplete = null)
     {
         if (scaleCoroutine != null)
             StopCoroutine(scaleCoroutine);
         scaleCoroutine = StartCoroutine(ScaleCoroutine(targetScale, onComplete));
+    }
+
+    public void NotifyPanelClosed()
+    {
+        isPanelOpen = false;
     }
 
     IEnumerator ScaleCoroutine(Vector3 targetScale, System.Action onComplete)

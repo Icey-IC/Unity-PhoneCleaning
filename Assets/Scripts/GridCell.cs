@@ -1,4 +1,4 @@
-using UnityEngine;
+ï»¿using UnityEngine;
 
 public class GridCell : MonoBehaviour
 {
@@ -7,16 +7,25 @@ public class GridCell : MonoBehaviour
 
     private SpriteRenderer sr;
 
-    public AppIcon currentIcon;       // µ±Ç°Õ¼¾Ý¸ñ×ÓµÄÈí¼þ
-    public FolderIcon currentFolder;  // µ±Ç°Õ¼¾Ý¸ñ×ÓµÄÎÄ¼þ¼Ð
+    public AppIcon currentIcon;
+    public FolderIcon currentFolder;
 
-    // ¸ñ×ÓÎª¿ÕµÄÌõ¼þ£ºÈí¼þºÍÎÄ¼þ¼Ð¶¼Ã»ÓÐ
     public bool IsEmpty => currentIcon == null && currentFolder == null;
 
     void Awake()
     {
         sr = GetComponent<SpriteRenderer>();
         sr.color = normalColor;
+
+        // Cell å±‚çº§
+        SetZ(-2f);
+    }
+
+    void SetZ(float z)
+    {
+        Vector3 pos = transform.position;
+        pos.z = z;
+        transform.position = pos;
     }
 
     public void Highlight()
@@ -30,35 +39,41 @@ public class GridCell : MonoBehaviour
         sr.color = normalColor;
     }
 
-    // ·ÅÖÃÈí¼þ
     public void SetIcon(AppIcon icon)
     {
         currentIcon = icon;
-        Vector3 snapPos = transform.position;
-        snapPos.z = -1f;
-        icon.transform.position = snapPos;
+
+        Vector3 pos = transform.position;
+        pos.z = -3f; // Iconå±‚
+
+        icon.transform.position = pos;
         icon.currentCell = this;
+
+        sr.enabled = false;
     }
 
-    // ÒÆ³ýÈí¼þ
     public void RemoveIcon()
     {
         currentIcon = null;
+        sr.enabled = true;
     }
 
-    // ·ÅÖÃÎÄ¼þ¼Ð
     public void SetFolder(FolderIcon folder)
     {
         currentFolder = folder;
-        Vector3 snapPos = transform.position;
-        snapPos.z = -1f;
-        folder.transform.position = snapPos;
+
+        Vector3 pos = transform.position;
+        pos.z = -3f;
+
+        folder.transform.position = pos;
         folder.currentCell = this;
+
+        sr.enabled = false;
     }
 
-    // ÒÆ³ýÎÄ¼þ¼Ð
     public void RemoveFolder()
     {
         currentFolder = null;
+        sr.enabled = true;
     }
 }

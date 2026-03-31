@@ -1,16 +1,24 @@
-using UnityEngine;
+ï»¿using UnityEngine;
 using System.Collections.Generic;
 
 public class FolderPanel : MonoBehaviour
 {
-    [Header("Ãæ°å¸ñ×ÓÅäÖÃ")]
     public GameObject cellPrefab;
-    public float cellSize = 0.8f;       // ¸ñ×Ó¼ä¾à
+    public float cellSize = 0.8f;
     public int columns = 3;
     public int rows = 3;
 
+    public FolderOverlay overlay;
+
     private GridCell[] cells = new GridCell[9];
+    private List<AppIcon> pendingIcons = new List<AppIcon>();
+
     private FolderIcon owner;
+    public FolderIcon Owner => owner;
+
+    float panelZ = -8f;
+    float cellZ = -9f;
+    float iconZ = -10f;
 
     public void Init(FolderIcon folderIcon)
     {
@@ -21,73 +29,140 @@ public class FolderPanel : MonoBehaviour
 
     void GenerateCells()
     {
-        // ÒÔÃæ°åÖĞĞÄÎªÔ­µã£¬Éú³É3x3¸ñ×Ó
         for (int i = 0; i < rows * columns; i++)
         {
             int row = i / columns;
             int col = i % columns;
 
-            float x = (col - 1) * cellSize; // -1, 0, 1
-            float y = (1 - row) * cellSize; // 1, 0, -1
+            float x = (col - 1) * cellSize;
+            float y = (1 - row) * cellSize;
 
-            Vector3 localPos = new Vector3(x, y, 0);
             GameObject cellObj = Instantiate(cellPrefab, transform);
-            cellObj.transform.localPosition = localPos;
-            cellObj.name = $"FolderCell_{i}";
 
-            cells[i] = cellObj.GetComponent<GridCell>();
+            // âœ… ç”¨ localPositionï¼ˆä¿®å¤ä¸å±…ä¸­ï¼‰
+            cellObj.transform.localPosition = new Vector3(x, y, 0f);
+
+            GridCell cell = cellObj.GetComponent<GridCell>();
+
+            // è®¾ç½® z
+            Vector3 pos = cell.transform.position;
+            pos.z = cellZ;
+            cell.transform.position = pos;
+
+            cells[i] = cell;
         }
     }
 
-    // ½«Èí¼ş·ÅÈëÃæ°å£¬×Ô¶¯ÕÒµÚÒ»¸ö¿Õ¸ñ×Ó
     public bool AddIcon(AppIcon icon)
     {
         for (int i = 0; i < cells.Length; i++)
         {
             if (cells[i].IsEmpty)
             {
-                // ´ÓÔ­À´µÄ¸ñ×ÓÒÆ³ı
-                if (icon.currentCell != null)
-                    icon.currentCell.RemoveIcon();
+                cells[i].currentIcon = icon;
+                icon.currentCell = cells[i];
 
-                cells[i].SetIcon(icon);
+                icon.transform.position = new Vector3(9999f, 9999f, iconZ);
+
+                if (!pendingIcons.Contains(icon))
+                    pendingIcons.Add(icon);
+
                 return true;
             }
         }
-        return false; // Ãæ°åÒÑÂú
-    }
-
-    // »ñÈ¡µ±Ç°Ãæ°åÄÚËùÓĞÈí¼ş
-    public List<AppIcon> GetAllIcons()
-    {
-        List<AppIcon> icons = new List<AppIcon>();
-        for (int i = 0; i < cells.Length; i++)
-        {
-            if (!cells[i].IsEmpty)
-                icons.Add(cells[i].currentIcon);
-        }
-        return icons;
+        return false;
     }
 
     public void Show()
     {
         gameObject.SetActive(true);
-        // ¹Ì¶¨ÔÚÊÀ½ç×ø±ê£¬²»ÊÜÈÎºÎ¸¸ÎïÌåÓ°Ïì£¨AwakeÀïÒÑSetParent(null)£©
-        transform.position = new Vector3(0f, 0f, -2f);
-        transform.rotation = Quaternion.identity;
-        transform.localScale = Vector3.one;
+
+        // Panel åˆ°æœ€å‰
+        transform.position = new Vector3(0f, 0f, panelZ);
+
+        // æ‰€æœ‰ cell æå‰
+        foreach (var cell in cells)
+        {
+            Vector3 pos = cell.transform.position;
+            pos.z = cellZ;
+            cell.transform.position = pos;
+        }
+
+        overlay.Show(this);
+
+        SyncPending();
+        MoveAllIconsToFront();
     }
+
     public void Hide()
     {
         gameObject.SetActive(false);
+
+        // âœ… éšè—æ‰€æœ‰å†…éƒ¨ icon
+        foreach (var cell in cells)
+        {
+            if (!cell.IsEmpty && cell.currentIcon != null)
+            {
+                cell.currentIcon.gameObject.SetActive(false);
+            }
+        }
+
+        if (overlay != null)
+            overlay.Hide();
+
+        if (owner != null)
+            owner.NotifyPanelClosed();
+    }
+
+    void SyncPending()
+    {
+        foreach (var icon in pendingIcons)
+        {
+            if (icon != null && icon.currentCell != null)
+            {
+                Vector3 pos = icon.currentCell.transform.position;
+                pos.z = iconZ;
+
+                icon.transform.position = pos;
+            }
+        }
+
+        pendingIcons.Clear();
+    }
+
+    void MoveAllIconsToFront()
+    {
+        foreach (var cell in cells)
+        {
+            if (!cell.IsEmpty && cell.currentIcon != null)
+            {
+                var icon = cell.currentIcon;
+
+                icon.gameObject.SetActive(true); // âœ… æ¢å¤æ˜¾ç¤º
+
+                Vector3 pos = icon.transform.position;
+                pos.z = iconZ;
+                icon.transform.position = pos;
+            }
+        }
     }
 
     public bool IsFull()
     {
-        for (int i = 0; i < cells.Length; i++)
-        {
-            if (cells[i].IsEmpty) return false;
-        }
+        foreach (var c in cells)
+            if (c.IsEmpty) return false;
+
         return true;
+    }
+
+    public List<AppIcon> GetAllIcons()
+    {
+        List<AppIcon> list = new List<AppIcon>();
+
+        foreach (var c in cells)
+            if (!c.IsEmpty)
+                list.Add(c.currentIcon);
+
+        return list;
     }
 }

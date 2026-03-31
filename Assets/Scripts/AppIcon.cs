@@ -1,6 +1,7 @@
 using UnityEngine;
 using System.Collections;
 using UnityEngine.EventSystems;
+using System.Collections.Generic;
 
 public class AppIcon : MonoBehaviour
 {
@@ -36,6 +37,8 @@ public class AppIcon : MonoBehaviour
     private Vector3 mouseDownScreenPos;     // 按下时的屏幕坐标
 
     private FolderIcon hoveredFolder = null; // 当前悬停的文件夹
+
+    public DialogueAsset dialogueData;
 
     void Awake()
     {
@@ -82,6 +85,14 @@ public class AppIcon : MonoBehaviour
         startDragPos = transform.position;
 
         ScaleTo(originalScale * pressScale);
+    }
+
+    void OnMouseOver()
+    {
+        if (Input.GetMouseButtonDown(1)) // 右键
+        {
+            StartAppDialogue();
+        }
     }
 
     void OnMouseDrag()
@@ -165,7 +176,7 @@ public class AppIcon : MonoBehaviour
         if (currentCell != null)
             currentCell.RemoveIcon();
 
-        sr.sortingOrder = 100;
+        SetZ(-10f); // 拖拽层
         ScaleTo(originalScale * dragScale);
     }
 
@@ -189,7 +200,8 @@ public class AppIcon : MonoBehaviour
     void DragUpdate()
     {
         Vector3 mousePos = Camera.main.ScreenToWorldPoint(Input.mousePosition);
-        mousePos.z = -1;
+        mousePos.z = -10f;
+
         transform.position = mousePos;
 
         Collider2D hitCollider = Physics2D.OverlapPoint(mousePos, gridLayer);
@@ -278,6 +290,24 @@ public class AppIcon : MonoBehaviour
             StopCoroutine(scaleCoroutine);
 
         scaleCoroutine = StartCoroutine(ScaleCoroutine(targetScale, onComplete));
+    }
+
+    void SetZ(float z)
+    {
+        Vector3 pos = transform.position;
+        pos.z = z;
+        transform.position = pos;
+    }
+
+    void StartAppDialogue()
+    {
+        if (dialogueData == null)
+        {
+            Debug.LogWarning("没有配置对话");
+            return;
+        }
+
+        DialogueManager.Instance.StartDialogue(dialogueData.lines);
     }
 
     IEnumerator ScaleCoroutine(Vector3 targetScale, System.Action onComplete)
