@@ -1,5 +1,5 @@
 fileFormatVersion: 2
-guid: e48060ee55bb93c47b5608766c4db6bd
+guid: 8598869eb93499247b4000e0662540af
 TextureImporter:
   internalIDToNameTable: []
   externalObjects: {}
@@ -43,7 +43,7 @@ TextureImporter:
   nPOTScale: 0
   lightmap: 0
   compressionQuality: 50
-  spriteMode: 2
+  spriteMode: 1
   spriteExtrude: 1
   spriteMeshType: 1
   alignment: 0
@@ -108,49 +108,7 @@ TextureImporter:
     forceMaximumCompressionQuality_BC6H_BC7: 0
   spriteSheet:
     serializedVersion: 2
-    sprites:
-    - serializedVersion: 2
-      name: folder_11
-      rect:
-        serializedVersion: 2
-        x: 608
-        y: 2029
-        width: 376
-        height: 368
-      alignment: 0
-      pivot: {x: 0.5, y: 0.5}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      outline: []
-      physicsShape: []
-      tessellationDetail: 0
-      bones: []
-      spriteID: 42bc0d0cdf4d7394b825d5478b9c2d48
-      internalID: 405595198
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: folder_0
-      rect:
-        serializedVersion: 2
-        x: 638
-        y: 3283
-        width: 1138
-        height: 408
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      outline: []
-      physicsShape: []
-      tessellationDetail: 0
-      bones: []
-      spriteID: 45a18e2f465cde740b57c018dfaf0827
-      internalID: 1837402429
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
+    sprites: []
     outline: []
     physicsShape: []
     bones: []
@@ -161,33 +119,7 @@ TextureImporter:
     edges: []
     weights: []
     secondaryTextures: []
-    nameFileIdTable:
-      folder_0: 1837402429
-      folder_1: -1764305214
-      folder_10: 1211363214
-      folder_11: 405595198
-      folder_12: -182136507
-      folder_13: 235533762
-      folder_14: -192201548
-      folder_15: -1588812667
-      folder_16: 107760838
-      folder_17: 253044145
-      folder_18: 1614532349
-      folder_19: -1472126257
-      folder_2: -2142646115
-      folder_20: -304217961
-      folder_21: -1331157277
-      folder_22: 1960956800
-      folder_23: -1544235013
-      folder_24: 168925809
-      folder_25: -214068664
-      folder_3: 2086255071
-      folder_4: -623736040
-      folder_5: -591792021
-      folder_6: 1925548433
-      folder_7: 399166899
-      folder_8: -1645591597
-      folder_9: 1758928257
+    nameFileIdTable: {}
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 
