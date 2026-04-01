@@ -8,6 +8,9 @@ public class AppIcon : MonoBehaviour
     public LayerMask gridLayer;
     public float longPressDuration = 0.5f;
 
+    [Header("App界面")]
+    public GameObject appView; // 每个app自己的界面
+
     [Header("缩放反馈配置")]
     public float pressScale = 0.9f;
     public float dragScale = 1.1f;
@@ -278,8 +281,48 @@ public class AppIcon : MonoBehaviour
     }
     void OnAppClicked()
     {
-        Debug.Log($"{gameObject.name} 被单击，进入App");
-        // TODO: 场景切换 / UI打开逻辑
+        if (appView == null)
+        {
+            Debug.LogWarning("没有绑定 App 界面");
+            return;
+        }
+
+        OpenApp();
+    }
+
+    void OpenApp()
+    {
+        appView.SetActive(true);
+
+        // ?? 可选：把app放到最前（UI）
+        appView.transform.SetAsLastSibling();
+    }
+
+    public void CloseApp()
+    {
+        gameObject.SetActive(false);
+    }
+
+    public void Uninstall()
+    {
+        // 1?? 从格子移除
+        if (currentCell != null)
+        {
+            currentCell.RemoveIcon();
+            currentCell = null;
+        }
+
+        // 2?? 如果在文件夹里（可选扩展）
+        // ?? 如果你后面支持 folder 内删除，这里要额外处理
+
+        // 3?? 关闭自己的菜单（避免残留UI）
+        if (contextMenu != null)
+        {
+            contextMenu.Hide();
+        }
+
+        // 4?? 销毁自己
+        Destroy(gameObject);
     }
 
     // ==================== 缩放动画 ====================
