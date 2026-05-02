@@ -6,6 +6,9 @@ public class FolderIcon : MonoBehaviour
 {
     public LayerMask gridLayer;
 
+    [Header("允许的App")]
+    public List<string> allowedAppIDs = new List<string>();
+
     [Header("缩放反馈配置")]
     public float dragHoverScale = 1.1f;
     public float scaleAnimDuration = 0.1f;
@@ -93,13 +96,58 @@ public class FolderIcon : MonoBehaviour
 
     public bool ReceiveIcon(AppIcon icon)
     {
+        // ❌ 不允许的App
+        if (!allowedAppIDs.Contains(icon.appID))
+        {
+            RejectIcon(icon);
+            return false;
+        }
+
         if (folderPanel.IsFull()) return false;
 
         folderPanel.AddIcon(icon);
         RefreshPreview();
+
         ScaleTo(originalScale);
         isHoveredByDrag = false;
+
         return true;
+    }
+
+    void RejectIcon(AppIcon icon)
+    {
+        // 1️⃣ 弹提示气泡
+        ShowRejectMessage("这个App不能放进该文件夹");
+
+        // 2️⃣ 复位 App
+        if (icon.currentCell != null)
+        {
+            icon.currentCell.SetIcon(icon);
+        }
+        else
+        {
+            // fallback（极端情况）
+            icon.transform.position = icon.transform.position;
+        }
+
+        // 3️⃣ 恢复缩放状态
+        ScaleTo(originalScale);
+        isHoveredByDrag = false;
+    }
+   
+
+    void ShowRejectMessage(string msg)
+    {
+        var dialogue = new List<DialogueLine>()
+    {
+        new DialogueLine
+        {
+            type = DialogueType.Player,
+            text = msg
+        }
+    };
+
+        DialogueManager.Instance.StartDialogue(dialogue);
     }
 
     public void RefreshPreview()

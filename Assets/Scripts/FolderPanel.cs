@@ -61,6 +61,7 @@ public class FolderPanel : MonoBehaviour
             {
                 cells[i].currentIcon = icon;
                 icon.currentCell = cells[i];
+                icon.isInFolder = true;
 
                 icon.transform.position = new Vector3(9999f, 9999f, iconZ);
 

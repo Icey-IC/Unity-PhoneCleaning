@@ -8,8 +8,14 @@ public class AppIcon : MonoBehaviour
     public LayerMask gridLayer;
     public float longPressDuration = 0.5f;
 
+    [Header("App标识")]
+    public string appID;
+
     [Header("App界面")]
     public GameObject appView; // 每个app自己的界面
+
+    [HideInInspector]
+    public bool isInFolder = false;
 
     [Header("缩放反馈配置")]
     public float pressScale = 0.9f;
@@ -77,6 +83,13 @@ public class AppIcon : MonoBehaviour
     }
     void OnMouseDown()
     {
+        //  在文件夹内 → 不允许拖拽
+        if (isInFolder)
+        {
+            // 但仍然允许点击（走点击逻辑）
+            return;
+        }
+
         // 如果菜单已打开，本次点击交给Update里的关闭逻辑处理，不启动新的拖拽流程
         if (menuShown) return;
 
@@ -103,6 +116,8 @@ public class AppIcon : MonoBehaviour
         // 检测鼠标是否移动超过阈值
         if (!mouseMoved)
         {
+            if (isInFolder) return; //  直接禁止拖拽
+
             float movedPixels = Vector3.Distance(Input.mousePosition, mouseDownScreenPos);
             if (movedPixels > movementThreshold)
             {
@@ -147,6 +162,13 @@ public class AppIcon : MonoBehaviour
 
     void OnMouseUp()
     {
+        // 在文件夹内 → 只触发点击
+        if (isInFolder)
+        {
+            OnAppClicked();
+            return;
+        }
+
         // 菜单显示中且没有进入拖拽 → 松手后菜单保留
         if (menuShown && !isDragging)
         {
