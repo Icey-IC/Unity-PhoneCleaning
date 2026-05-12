@@ -5,6 +5,9 @@ public class GridCell : MonoBehaviour
     public Color normalColor = new Color(0.8f, 0.8f, 0.8f, 0.5f);
     public Color hoverColor = Color.white;
 
+    /// <summary>Folder grid this cell belongs to (set by <see cref="FolderPanel"/> or manually if cells live under a separate Canvas).</summary>
+    public FolderPanel ownerFolderPanel;
+
     private SpriteRenderer sr;
 
     public AppIcon currentIcon;

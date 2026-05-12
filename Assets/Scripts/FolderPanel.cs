@@ -27,6 +27,22 @@ public class FolderPanel : MonoBehaviour
         gameObject.SetActive(false);
     }
 
+    void OnEnable()
+    {
+        EnsureCellsKnowOwnerPanel();
+    }
+
+    /// <summary>Backfill for older scenes / cells reparented under Canvas without hierarchy to FolderPanel.</summary>
+    void EnsureCellsKnowOwnerPanel()
+    {
+        if (cells == null) return;
+        for (int i = 0; i < cells.Length; i++)
+        {
+            if (cells[i] != null && cells[i].ownerFolderPanel == null)
+                cells[i].ownerFolderPanel = this;
+        }
+    }
+
     void GenerateCells()
     {
         for (int i = 0; i < rows * columns; i++)
@@ -43,6 +59,7 @@ public class FolderPanel : MonoBehaviour
             cellObj.transform.localPosition = new Vector3(x, y, 0f);
 
             GridCell cell = cellObj.GetComponent<GridCell>();
+            cell.ownerFolderPanel = this;
 
             // 设置 z
             Vector3 pos = cell.transform.position;
@@ -165,5 +182,51 @@ public class FolderPanel : MonoBehaviour
                 list.Add(c.currentIcon);
 
         return list;
+    }
+
+    /// <summary>Union of folder grid cell bounds in world space; used to auto-close the panel while dragging an icon out.</summary>
+    public bool WorldPointIsInsidePanelBounds(Vector2 worldXY)
+    {
+        EnsureCellsKnowOwnerPanel();
+        if (cells == null || cells.Length == 0)
+            return true;
+
+        bool hasBounds = false;
+        Bounds combined = default;
+        foreach (var c in cells)
+        {
+            if (c == null) continue;
+            Bounds b = default;
+            bool got = false;
+            var rend = c.GetComponent<SpriteRenderer>();
+            if (rend != null)
+            {
+                b = rend.bounds;
+                got = true;
+            }
+            else
+            {
+                var col = c.GetComponent<Collider2D>();
+                if (col != null)
+                {
+                    b = col.bounds;
+                    got = true;
+                }
+            }
+            if (!got) continue;
+            if (!hasBounds)
+            {
+                combined = b;
+                hasBounds = true;
+            }
+            else
+                combined.Encapsulate(b);
+        }
+
+        if (!hasBounds)
+            return true;
+
+        var test = new Vector3(worldXY.x, worldXY.y, combined.center.z);
+        return combined.Contains(test);
     }
 }

@@ -42,6 +42,18 @@ public class GalleryManager : MonoBehaviour
         allPhotos.Remove(photo);
     }
 
+    /// <summary>Photos the player should remove for the gallery task (canDelete).</summary>
+    public int CountRemainingDeletablePhotos()
+    {
+        int n = 0;
+        foreach (var p in allPhotos)
+        {
+            if (p != null && p.canDelete)
+                n++;
+        }
+        return n;
+    }
+
     public void EnterMultiSelect()
     {
         if (multiMode) return;

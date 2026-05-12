@@ -5,25 +5,49 @@ public class AppContextMenu : MonoBehaviour
 {
     private AppIcon owner;
 
-    [Header("按钮绑定")]
+    [Header("Buttons")]
     public Button uninstallButton;
     public Button settingsButton;
+
+    [Header("Notifications")]
+    [Tooltip("Optional: assign the Toggle under panel. If empty, tries panel/AllowNotifications then Unicode path for legacy hierarchy.")]
+    public Toggle notificationsToggle;
 
     public void Init(AppIcon appIcon)
     {
         owner = appIcon;
 
-        // 在代码里绑定按钮事件，不需要在Inspector里手动拖
+        ResolveNotificationsToggle();
+
         if (uninstallButton != null)
             uninstallButton.onClick.AddListener(OnUninstallClicked);
 
         if (settingsButton != null)
             settingsButton.onClick.AddListener(OnSettingsClicked);
+
+        if (notificationsToggle != null)
+        {
+            notificationsToggle.onValueChanged.RemoveListener(OnNotificationsToggled);
+            notificationsToggle.onValueChanged.AddListener(OnNotificationsToggled);
+            notificationsToggle.SetIsOnWithoutNotify(owner.notificationsAllowed);
+        }
+    }
+
+    void ResolveNotificationsToggle()
+    {
+        if (notificationsToggle != null) return;
+        var t = transform.Find("panel/AllowNotifications");
+        if (t == null)
+            t = transform.Find("panel/\u5141\u8bb8\u901a\u77e5");
+        if (t != null)
+            notificationsToggle = t.GetComponent<Toggle>();
     }
 
     public void Show()
     {
         gameObject.SetActive(true);
+        if (notificationsToggle != null && owner != null)
+            notificationsToggle.SetIsOnWithoutNotify(owner.notificationsAllowed);
     }
 
     public void Hide()
@@ -33,15 +57,20 @@ public class AppContextMenu : MonoBehaviour
 
     void OnUninstallClicked()
     {
-        Debug.Log($"卸载 {owner.gameObject.name}");
-        // TODO: 卸载逻辑
-        Hide();
+        if (owner != null)
+            owner.Uninstall();
+    }
+
+    void OnNotificationsToggled(bool on)
+    {
+        if (owner != null)
+            owner.SetNotificationsAllowed(on);
     }
 
     void OnSettingsClicked()
     {
-        Debug.Log($"设置 {owner.gameObject.name}");
-        // TODO: 设置逻辑
+        Debug.Log($"Settings {owner.gameObject.name}");
+        // TODO: settings behaviour
         Hide();
     }
 }

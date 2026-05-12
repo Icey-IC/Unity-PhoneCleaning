@@ -8,22 +8,26 @@ public class AppIcon : MonoBehaviour
     public LayerMask gridLayer;
     public float longPressDuration = 0.5f;
 
-    [Header("App标识")]
+    [Header("App id")]
     public string appID;
 
-    [Header("App界面")]
-    public GameObject appView; // 每个app自己的界面
+    [Header("Notifications (for tasks)")]
+    [Tooltip("Allow-notifications toggle from the long-press menu; tasks can compare appID to required on/off. Default: on at start.")]
+    public bool notificationsAllowed = true;
+
+    [Header("App UI")]
+    public GameObject appView; // each app's own screen
 
     [HideInInspector]
     public bool isInFolder = false;
 
-    [Header("缩放反馈配置")]
+    [Header("Scale feedback")]
     public float pressScale = 0.9f;
     public float dragScale = 1.1f;
     public float scaleAnimDuration = 0.1f;
 
-    [Header("右键菜单配置")]
-    public AppContextMenu contextMenu; // 在Inspector里拖入子物体上的菜单组件
+    [Header("Context menu")]
+    public AppContextMenu contextMenu; // assign child menu in Inspector
 
     [HideInInspector] public GridCell currentCell;
     private GridCell hoveredCell;
@@ -36,18 +40,26 @@ public class AppIcon : MonoBehaviour
     private float mouseDownTime = 0f;
     private bool isDragging = false;
     private bool longPressTriggered = false;
-    private bool menuShown = false;         // 小窗口是否已弹出
-    private bool mouseMoved = false;        // 长按后鼠标是否移动过
+    private bool menuShown = false;         // context menu visible
+    private bool mouseMoved = false;        // moved past threshold after press
 
     private Coroutine scaleCoroutine;
 
-    // 用于判断鼠标是否移动的阈值（像素）
+    // pixels: treat as click vs drag
     private const float movementThreshold = 5f;
-    private Vector3 mouseDownScreenPos;     // 按下时的屏幕坐标
+    private Vector3 mouseDownScreenPos;     // screen pos at mouse down
 
-    private FolderIcon hoveredFolder = null; // 当前悬停的文件夹
+    private FolderIcon hoveredFolder = null; // folder under drag
+
+    /// <summary>True after a valid OnMouseDown on this icon (not blocked by UI); prevents stray OnMouseUp from UI click-through.</summary>
+    private bool mouseDownOnThisIcon;
 
     public DialogueAsset dialogueData;
+
+    static bool IsPointerOverBlockingUI()
+    {
+        return EventSystem.current != null && EventSystem.current.IsPointerOverGameObject();
+    }
 
     void Awake()
     {
@@ -55,7 +67,7 @@ public class AppIcon : MonoBehaviour
         originalSortingOrder = sr.sortingOrder;
         originalScale = transform.localScale;
 
-        // 初始化菜单
+        // init menu
         if (contextMenu != null)
         {
             contextMenu.Init(this);
@@ -74,7 +86,7 @@ public class AppIcon : MonoBehaviour
         }
     }
 
-    // 改为无参数版本
+    // pointer over UI counts as on-menu
     bool IsClickOnMenu()
     {
         if (contextMenu == null) return false;
@@ -83,16 +95,13 @@ public class AppIcon : MonoBehaviour
     }
     void OnMouseDown()
     {
-        //  在文件夹内 → 不允许拖拽
-        if (isInFolder)
-        {
-            // 但仍然允许点击（走点击逻辑）
+        if (IsPointerOverBlockingUI())
             return;
-        }
 
-        // 如果菜单已打开，本次点击交给Update里的关闭逻辑处理，不启动新的拖拽流程
+        // menu open: let Update handle outside click
         if (menuShown) return;
 
+        mouseDownOnThisIcon = true;
         mouseDownTime = Time.time;
         mouseDownScreenPos = Input.mousePosition;
         isDragging = false;
@@ -105,19 +114,25 @@ public class AppIcon : MonoBehaviour
 
     void OnMouseOver()
     {
-        if (Input.GetMouseButtonDown(1)) // 右键
+        if (Input.GetMouseButtonDown(1)) // RMB
         {
+            if (IsPointerOverBlockingUI())
+                return;
             StartAppDialogue();
         }
     }
 
     void OnMouseDrag()
     {
-        // 检测鼠标是否移动超过阈值
+        if (!mouseDownOnThisIcon)
+            return;
+
+        if (!isDragging && !menuShown && IsPointerOverBlockingUI())
+            return;
+
+        // movement threshold
         if (!mouseMoved)
         {
-            if (isInFolder) return; //  直接禁止拖拽
-
             float movedPixels = Vector3.Distance(Input.mousePosition, mouseDownScreenPos);
             if (movedPixels > movementThreshold)
             {
@@ -125,7 +140,7 @@ public class AppIcon : MonoBehaviour
             }
         }
 
-        // 等待长按阈值
+        // wait for long-press time
         if (!longPressTriggered)
         {
             if (Time.time - mouseDownTime >= longPressDuration)
@@ -134,24 +149,24 @@ public class AppIcon : MonoBehaviour
 
                 if (mouseMoved)
                 {
-                    // 长按时已经移动了 → 直接进入拖拽
+                    // moved before long press ended -> drag
                     EnterDragState();
                 }
                 else
                 {
-                    // 长按时没有移动 → 弹出菜单
+                    // still -> show menu
                     ShowMenu();
                 }
             }
             return;
         }
 
-        // 菜单已显示且鼠标开始移动 → 关闭菜单，进入拖拽
+        // menu up and then move -> close menu and drag
         if (menuShown && mouseMoved)
         {
             CloseMenu();
             EnterDragState();
-            // 注意不要 return，让下方拖拽逻辑立刻生效
+            // fall through so drag runs this frame
         }
 
         if (isDragging)
@@ -162,14 +177,11 @@ public class AppIcon : MonoBehaviour
 
     void OnMouseUp()
     {
-        // 在文件夹内 → 只触发点击
-        if (isInFolder)
-        {
-            OnAppClicked();
+        if (!mouseDownOnThisIcon)
             return;
-        }
+        mouseDownOnThisIcon = false;
 
-        // 菜单显示中且没有进入拖拽 → 松手后菜单保留
+        // menu visible and not dragging: keep menu
         if (menuShown && !isDragging)
         {
             ScaleTo(originalScale);
@@ -178,7 +190,7 @@ public class AppIcon : MonoBehaviour
 
         if (!longPressTriggered)
         {
-            // 没撑到0.5秒就松手 → 单击
+            // released before long press -> single click
             ScaleTo(originalScale, onComplete: OnAppClicked);
             return;
         }
@@ -189,26 +201,30 @@ public class AppIcon : MonoBehaviour
             return;
         }
 
-        // 正常拖拽结束
+        // end drag
         FinishDrag();
     }
-    // ==================== 状态操作 ====================
+    // ==================== state ====================
 
     void EnterDragState()
     {
         isDragging = true;
 
+        FolderPanel sourceFolderPanel = currentCell != null ? currentCell.ownerFolderPanel : null;
         if (currentCell != null)
             currentCell.RemoveIcon();
 
-        SetZ(-10f); // 拖拽层
+        if (sourceFolderPanel != null && sourceFolderPanel.Owner != null)
+            sourceFolderPanel.Owner.RefreshPreview();
+
+        SetZ(-10f); // drag layer
         ScaleTo(originalScale * dragScale);
     }
 
     void ShowMenu()
     {
         menuShown = true;
-        ScaleTo(originalScale); // 弹出菜单时恢复原始大小
+        ScaleTo(originalScale); // normal size when menu opens
 
         if (contextMenu != null)
             contextMenu.Show();
@@ -229,22 +245,24 @@ public class AppIcon : MonoBehaviour
 
         transform.position = mousePos;
 
+        TryCloseOpenFolderIfPointerLeftPanel(mousePos);
+
         Collider2D hitCollider = Physics2D.OverlapPoint(mousePos, gridLayer);
 
         if (hitCollider != null)
         {
-            // 优先检测是否是文件夹
+            // folder vs cell
             FolderIcon folder = hitCollider.GetComponent<FolderIcon>();
             GridCell cell = hitCollider.GetComponent<GridCell>();
 
             if (folder != null)
             {
-                // 悬停在文件夹上
+                // over folder
                 if (folder != hoveredFolder)
                 {
-                    // 离开旧的格子高亮
+                    // leave cell highlight
                     if (hoveredCell != null) { hoveredCell.Unhighlight(); hoveredCell = null; }
-                    // 离开旧文件夹
+                    // leave old folder
                     if (hoveredFolder != null) hoveredFolder.OnDragExit();
 
                     hoveredFolder = folder;
@@ -253,7 +271,7 @@ public class AppIcon : MonoBehaviour
             }
             else if (cell != null)
             {
-                // 悬停在普通格子上
+                // over grid cell
                 if (hoveredFolder != null) { hoveredFolder.OnDragExit(); hoveredFolder = null; }
 
                 if (cell != hoveredCell)
@@ -270,6 +288,21 @@ public class AppIcon : MonoBehaviour
             if (hoveredFolder != null) { hoveredFolder.OnDragExit(); hoveredFolder = null; }
         }
     }
+
+    /// <summary>While dragging an icon that belongs to an open folder, close the folder once the pointer leaves the panel so the home grid is visible.</summary>
+    void TryCloseOpenFolderIfPointerLeftPanel(Vector3 mouseWorld)
+    {
+        if (!isDragging || currentCell == null)
+            return;
+
+        FolderPanel panel = currentCell.ownerFolderPanel;
+        if (panel == null || !panel.gameObject.activeInHierarchy || panel.Owner == null)
+            return;
+
+        if (!panel.WorldPointIsInsidePanelBounds(new Vector2(mouseWorld.x, mouseWorld.y)))
+            panel.Owner.ClosePanel();
+    }
+
     void FinishDrag()
     {
         sr.sortingOrder = originalSortingOrder;
@@ -277,7 +310,7 @@ public class AppIcon : MonoBehaviour
 
         if (hoveredFolder != null)
         {
-            // 放入文件夹
+            // drop into folder
             hoveredFolder.ReceiveIcon(this);
             hoveredFolder = null;
             hoveredCell = null;
@@ -285,7 +318,11 @@ public class AppIcon : MonoBehaviour
         else if (hoveredCell != null && hoveredCell.IsEmpty)
         {
             hoveredCell.Unhighlight();
+            FolderPanel dropFolder = hoveredCell.ownerFolderPanel;
             hoveredCell.SetIcon(this);
+            isInFolder = dropFolder != null;
+            if (dropFolder != null && dropFolder.Owner != null)
+                dropFolder.Owner.RefreshPreview();
             hoveredCell = null;
         }
         else
@@ -294,7 +331,12 @@ public class AppIcon : MonoBehaviour
             if (hoveredFolder != null) { hoveredFolder.OnDragExit(); hoveredFolder = null; }
 
             if (currentCell != null)
+            {
+                FolderPanel restoreFolder = currentCell.ownerFolderPanel;
                 currentCell.SetIcon(this);
+                if (restoreFolder != null && restoreFolder.Owner != null)
+                    restoreFolder.Owner.RefreshPreview();
+            }
             else
                 transform.position = startDragPos;
         }
@@ -305,7 +347,7 @@ public class AppIcon : MonoBehaviour
     {
         if (appView == null)
         {
-            Debug.LogWarning("没有绑定 App 界面");
+            Debug.LogWarning("App view is not assigned.");
             return;
         }
 
@@ -316,7 +358,7 @@ public class AppIcon : MonoBehaviour
     {
         appView.SetActive(true);
 
-        // ?? 可选：把app放到最前（UI）
+        // optional: bring app UI to front
         appView.transform.SetAsLastSibling();
     }
 
@@ -325,29 +367,49 @@ public class AppIcon : MonoBehaviour
         gameObject.SetActive(false);
     }
 
+    /// <summary>Called from the long-press menu allow-notifications toggle; tasks read <see cref="notificationsAllowed"/>.</summary>
+    public void SetNotificationsAllowed(bool allowed)
+    {
+        notificationsAllowed = allowed;
+    }
+
+    /// <summary>Find an app by appID in the scene (includes inactive); for task validation.</summary>
+    public static AppIcon FindByAppId(string id)
+    {
+        if (string.IsNullOrEmpty(id)) return null;
+        var all = FindObjectsOfType<AppIcon>(true);
+        for (int i = 0; i < all.Length; i++)
+        {
+            if (all[i].appID == id)
+                return all[i];
+        }
+        return null;
+    }
+
     public void Uninstall()
     {
-        // 1?? 从格子移除
+        FolderPanel folderPanel = currentCell != null ? currentCell.ownerFolderPanel : null;
+
         if (currentCell != null)
         {
             currentCell.RemoveIcon();
             currentCell = null;
         }
 
-        // 2?? 如果在文件夹里（可选扩展）
-        // ?? 如果你后面支持 folder 内删除，这里要额外处理
+        if (folderPanel != null && folderPanel.Owner != null)
+            folderPanel.Owner.RefreshPreview();
 
-        // 3?? 关闭自己的菜单（避免残留UI）
+        // hide menu
         if (contextMenu != null)
         {
             contextMenu.Hide();
         }
 
-        // 4?? 销毁自己
+        // 4 destroy
         Destroy(gameObject);
     }
 
-    // ==================== 缩放动画 ====================
+    // ==================== scale ====================
 
     void ScaleTo(Vector3 targetScale, System.Action onComplete = null)
     {
@@ -368,7 +430,7 @@ public class AppIcon : MonoBehaviour
     {
         if (dialogueData == null)
         {
-            Debug.LogWarning("没有配置对话");
+            Debug.LogWarning("Dialogue data is not assigned.");
             return;
         }
 
