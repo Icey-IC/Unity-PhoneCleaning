@@ -51,7 +51,7 @@ public class LevelTaskTracker : MonoBehaviour
     public bool alsoLoadNextScene;
     public string nextSceneName;
 
-    bool phoneScanDone;
+    bool phoneScanDone = true;
     bool phoneCleanDone;
     readonly bool[] taskDone = new bool[TaskCount];
     readonly string[] taskBaseText = new string[TaskCount];
@@ -92,7 +92,7 @@ public class LevelTaskTracker : MonoBehaviour
     /// <summary>Call from buttons on the phone manager app view.</summary>
     public void ResetPhoneCleanProgress()
     {
-        phoneScanDone = false;
+        phoneScanDone = true;
         phoneCleanDone = false;
     }
 

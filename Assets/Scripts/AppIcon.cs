@@ -356,6 +356,17 @@ public class AppIcon : MonoBehaviour
 
     void OpenApp()
     {
+        // 如果在文件夹里，先关闭文件夹
+        if (currentCell != null && currentCell.ownerFolderPanel != null)
+        {
+            var panel = currentCell.ownerFolderPanel;
+
+            if (panel.Owner != null)
+            {
+                panel.Owner.ClosePanel();
+            }
+        }
+
         appView.SetActive(true);
 
         // optional: bring app UI to front
