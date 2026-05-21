@@ -43,7 +43,7 @@ TextureImporter:
   nPOTScale: 0
   lightmap: 0
   compressionQuality: 50
-  spriteMode: 1
+  spriteMode: 2
   spriteExtrude: 1
   spriteMeshType: 1
   alignment: 0
@@ -108,7 +108,406 @@ TextureImporter:
     forceMaximumCompressionQuality_BC6H_BC7: 0
   spriteSheet:
     serializedVersion: 2
-    sprites: []
+    sprites:
+    - serializedVersion: 2
+      name: S2APP_0
+      rect:
+        serializedVersion: 2
+        x: 278
+        y: 3264
+        width: 372
+        height: 366
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: ca5292d7df831104883a871e92208d47
+      internalID: 1384694056
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: S2APP_1
+      rect:
+        serializedVersion: 2
+        x: 767
+        y: 3262
+        width: 371
+        height: 368
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: b3f4405ca23ac1e4186e26dc4a27f7fd
+      internalID: -1651925836
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: S2APP_2
+      rect:
+        serializedVersion: 2
+        x: 1270
+        y: 3262
+        width: 368
+        height: 368
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: c8e9b1eb5a91b7044bfd2b8a6887fc45
+      internalID: 907357211
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: S2APP_3
+      rect:
+        serializedVersion: 2
+        x: 1783
+        y: 3264
+        width: 371
+        height: 366
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 03d07f39ca3e1084fa3d03d5df7946dd
+      internalID: 863067866
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: S2APP_4
+      rect:
+        serializedVersion: 2
+        x: 278
+        y: 2801
+        width: 371
+        height: 369
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 436fac7cb8625ad4abad51e5438f500b
+      internalID: -208063439
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: S2APP_5
+      rect:
+        serializedVersion: 2
+        x: 762
+        y: 2810
+        width: 372
+        height: 368
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 5727e986670ab4c4d82a38c725983ca9
+      internalID: 2112942348
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: S2APP_6
+      rect:
+        serializedVersion: 2
+        x: 1270
+        y: 2810
+        width: 370
+        height: 368
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: d756b2e3bec7aae478aca1ccb047dcf8
+      internalID: 637119778
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: S2APP_7
+      rect:
+        serializedVersion: 2
+        x: 1781
+        y: 2816
+        width: 372
+        height: 368
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: b382bcdb9703683418e1dd48d0c9df50
+      internalID: 670964494
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: S2APP_8
+      rect:
+        serializedVersion: 2
+        x: 290
+        y: 2335
+        width: 371
+        height: 368
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 1d7ffd1b2796b32469cfa1fbda3af30b
+      internalID: -103029476
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: S2APP_9
+      rect:
+        serializedVersion: 2
+        x: 775
+        y: 2343
+        width: 372
+        height: 368
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 8f497cc9fc620b54ebc80c005bd1b440
+      internalID: 929350244
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: S2APP_10
+      rect:
+        serializedVersion: 2
+        x: 1281
+        y: 2343
+        width: 372
+        height: 368
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 089dc9028c8980a4d8ff0ca400908ce0
+      internalID: -1993722015
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: S2APP_11
+      rect:
+        serializedVersion: 2
+        x: 1793
+        y: 2349
+        width: 370
+        height: 368
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: e0bcb6a756479c94bb2547603b26604d
+      internalID: 667957423
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: S2APP_12
+      rect:
+        serializedVersion: 2
+        x: 270
+        y: 570
+        width: 371
+        height: 368
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 5bc51726cf8894e4d873d7886fd921bf
+      internalID: -1110644638
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: S2APP_13
+      rect:
+        serializedVersion: 2
+        x: 774
+        y: 561
+        width: 372
+        height: 381
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 21f68c7195f872642a301ddf4ef80113
+      internalID: -529489707
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: S2APP_14
+      rect:
+        serializedVersion: 2
+        x: 1301
+        y: 574
+        width: 371
+        height: 368
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: bba10d36567be894582de55b2968df4f
+      internalID: 878080121
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: S2APP_15
+      rect:
+        serializedVersion: 2
+        x: 1790
+        y: 572
+        width: 371
+        height: 367
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 9c1cb44ecb9c04f439e0232edcd20a2f
+      internalID: -854680605
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: S2APP_16
+      rect:
+        serializedVersion: 2
+        x: 614
+        y: 370
+        width: 147
+        height: 108
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: ba1342094b6265e469523979d854bf89
+      internalID: 2106895672
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: S2APP_17
+      rect:
+        serializedVersion: 2
+        x: 1153
+        y: 370
+        width: 182
+        height: 116
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 16811231c3c0c8c46b437f26b73b1126
+      internalID: 207387348
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: S2APP_18
+      rect:
+        serializedVersion: 2
+        x: 1708
+        y: 376
+        width: 145
+        height: 104
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 683c1aca9ca1d8f40892f2fc9d7a628d
+      internalID: -1862002746
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
     outline: []
     physicsShape: []
     bones: []
@@ -119,7 +518,27 @@ TextureImporter:
     edges: []
     weights: []
     secondaryTextures: []
-    nameFileIdTable: {}
+    nameFileIdTable:
+      S2APP_0: 1384694056
+      S2APP_1: -1651925836
+      S2APP_10: -1993722015
+      S2APP_11: 667957423
+      S2APP_12: -1110644638
+      S2APP_13: -529489707
+      S2APP_14: 878080121
+      S2APP_15: -854680605
+      S2APP_16: 2106895672
+      S2APP_17: 207387348
+      S2APP_18: -1862002746
+      S2APP_19: 409134994
+      S2APP_2: 907357211
+      S2APP_3: 863067866
+      S2APP_4: -208063439
+      S2APP_5: 2112942348
+      S2APP_6: 637119778
+      S2APP_7: 670964494
+      S2APP_8: -103029476
+      S2APP_9: 929350244
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

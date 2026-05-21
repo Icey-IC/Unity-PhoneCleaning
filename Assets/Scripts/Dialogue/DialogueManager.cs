@@ -4,6 +4,7 @@ using UnityEngine;
 public class DialogueManager : MonoBehaviour
 {
     public static DialogueManager Instance;
+    private System.Action onDialogueComplete;
 
     [Header("Prefab")]
     public GameObject npcBubblePrefab;
@@ -23,12 +24,14 @@ public class DialogueManager : MonoBehaviour
         Instance = this;
     }
 
-    public void StartDialogue(List<DialogueLine> lines)
+    public void StartDialogue(List<DialogueLine> lines, System.Action onComplete = null)
     {
         dialogueQueue.Clear();
 
         foreach (var line in lines)
             dialogueQueue.Enqueue(line);
+
+        onDialogueComplete = onComplete;
 
         ShowNext();
     }
@@ -39,7 +42,11 @@ public class DialogueManager : MonoBehaviour
             Destroy(currentBubble);
 
         if (dialogueQueue.Count == 0)
+        {
+            onDialogueComplete?.Invoke();
+            onDialogueComplete = null;
             return;
+        }
 
         var line = dialogueQueue.Dequeue();
 

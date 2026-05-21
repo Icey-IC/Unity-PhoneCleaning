@@ -55,7 +55,7 @@ public class FolderPanel : MonoBehaviour
 
             GameObject cellObj = Instantiate(cellPrefab, transform);
 
-            // ✅ 用 localPosition（修复不居中）
+            // 用 localPosition（修复不居中）
             cellObj.transform.localPosition = new Vector3(x, y, 0f);
 
             GridCell cell = cellObj.GetComponent<GridCell>();

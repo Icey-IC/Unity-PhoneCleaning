@@ -54,7 +54,9 @@ public class AppIcon : MonoBehaviour
     /// <summary>True after a valid OnMouseDown on this icon (not blocked by UI); prevents stray OnMouseUp from UI click-through.</summary>
     private bool mouseDownOnThisIcon;
 
+    [Header("Dialogue")]
     public DialogueAsset dialogueData;
+    public DialogueAsset onOpenDialogue;
 
     static bool IsPointerOverBlockingUI()
     {
@@ -371,6 +373,12 @@ public class AppIcon : MonoBehaviour
 
         // optional: bring app UI to front
         appView.transform.SetAsLastSibling();
+
+        // 打开时对话
+        if (onOpenDialogue != null)
+        {
+            DialogueManager.Instance.StartDialogue(onOpenDialogue.lines);
+        }
     }
 
     public void CloseApp()

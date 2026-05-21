@@ -51,6 +51,12 @@ public class LevelTaskTracker : MonoBehaviour
     public bool alsoLoadNextScene;
     public string nextSceneName;
 
+    [Header("Level Start Dialogue")]
+    public DialogueAsset startDialogue;
+
+    [Header("Submit Dialogue")]
+    public DialogueAsset submitDialogue;
+
     bool phoneScanDone = true;
     bool phoneCleanDone;
     readonly bool[] taskDone = new bool[TaskCount];
@@ -70,6 +76,12 @@ public class LevelTaskTracker : MonoBehaviour
         {
             if (taskLineLabels[i] != null)
                 taskBaseText[i] = taskLineLabels[i].text;
+        }
+
+        // 开场对话
+        if (startDialogue != null)
+        {
+            DialogueManager.Instance.StartDialogue(startDialogue.lines);
         }
     }
 
@@ -178,14 +190,73 @@ public class LevelTaskTracker : MonoBehaviour
 
     bool EvaluateFolderSort()
     {
-        var icons = FindObjectsOfType<AppIcon>(true);
         var folders = FindObjectsOfType<FolderIcon>(true);
-        foreach (var icon in icons)
+
+        // =========================
+        // 1️⃣ 检查文件夹里有没有非法 App
+        // =========================
+
+        foreach (var folder in folders)
         {
-            if (icon == null || string.IsNullOrEmpty(icon.appID)) continue;
-            if (!IconSatisfiesFolderAssignment(icon, folders))
+            if (folder == null || folder.folderPanel == null)
+                continue;
+
+            List<AppIcon> icons = folder.folderPanel.GetAllIcons();
+
+            foreach (var icon in icons)
+            {
+                if (icon == null)
+                    continue;
+
+                // ❌ 文件夹里出现了不属于它的 App
+                if (!folder.allowedAppIDs.Contains(icon.appID))
+                    return false;
+            }
+        }
+
+        // =========================
+        // 2️⃣ 检查所有“需要归类”的 App
+        // 是否进入了任意正确文件夹
+        // =========================
+
+        var allIcons = FindObjectsOfType<AppIcon>(true);
+
+        foreach (var icon in allIcons)
+        {
+            if (icon == null || string.IsNullOrEmpty(icon.appID))
+                continue;
+
+            bool belongsToAnyFolder = false;
+
+            // 这个 App 是否被任意文件夹需要
+            foreach (var folder in folders)
+            {
+                if (folder.allowedAppIDs.Contains(icon.appID))
+                {
+                    belongsToAnyFolder = true;
+                    break;
+                }
+            }
+
+            // 不属于任何文件夹要求 → 忽略
+            if (!belongsToAnyFolder)
+                continue;
+
+            // ❌ 还在桌面外面
+            if (!icon.isInFolder)
+                return false;
+
+            FolderPanel panel = GetFolderPanelForIcon(icon);
+
+            // ❌ 不在文件夹里（保险）
+            if (panel == null || panel.Owner == null)
+                return false;
+
+            // ❌ 当前文件夹不接受这个 App
+            if (!panel.Owner.allowedAppIDs.Contains(icon.appID))
                 return false;
         }
+
         return true;
     }
 
@@ -275,8 +346,29 @@ public class LevelTaskTracker : MonoBehaviour
     public void OnSubmitPressed()
     {
         onSubmitClicked?.Invoke();
+
+        // 如果有对话，先播放
+        if (submitDialogue != null)
+        {
+            DialogueManager.Instance.StartDialogue(submitDialogue.lines, OnSubmitDialogueFinished);
+        }
+        else
+        {
+            LoadNextScene();
+        }
+    }
+
+    void OnSubmitDialogueFinished()
+    {
+        LoadNextScene();
+    }
+
+    void LoadNextScene()
+    {
         if (alsoLoadNextScene && !string.IsNullOrEmpty(nextSceneName))
+        {
             SceneManager.LoadScene(nextSceneName);
+        }
     }
 }
 

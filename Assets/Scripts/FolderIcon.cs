@@ -96,14 +96,8 @@ public class FolderIcon : MonoBehaviour
 
     public bool ReceiveIcon(AppIcon icon)
     {
-        // ❌ 不允许的App
-        if (!allowedAppIDs.Contains(icon.appID))
-        {
-            RejectIcon(icon);
+        if (folderPanel.IsFull())
             return false;
-        }
-
-        if (folderPanel.IsFull()) return false;
 
         folderPanel.AddIcon(icon);
         RefreshPreview();
