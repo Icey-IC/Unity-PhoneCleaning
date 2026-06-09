@@ -271,7 +271,7 @@ public class AppIcon : MonoBehaviour
                     hoveredFolder.OnDragEnter();
                 }
             }
-            else if (cell != null)
+            else if (cell != null && cell.CanAcceptDrop)
             {
                 // over grid cell
                 if (hoveredFolder != null) { hoveredFolder.OnDragExit(); hoveredFolder = null; }
@@ -282,6 +282,11 @@ public class AppIcon : MonoBehaviour
                     hoveredCell = cell;
                     hoveredCell.Highlight();
                 }
+            }
+            else if (cell != null)
+            {
+                if (hoveredFolder != null) { hoveredFolder.OnDragExit(); hoveredFolder = null; }
+                if (hoveredCell != null) { hoveredCell.Unhighlight(); hoveredCell = null; }
             }
         }
         else
@@ -317,7 +322,7 @@ public class AppIcon : MonoBehaviour
             hoveredFolder = null;
             hoveredCell = null;
         }
-        else if (hoveredCell != null && hoveredCell.IsEmpty)
+        else if (hoveredCell != null && hoveredCell.CanAcceptDrop)
         {
             hoveredCell.Unhighlight();
             FolderPanel dropFolder = hoveredCell.ownerFolderPanel;
@@ -358,7 +363,7 @@ public class AppIcon : MonoBehaviour
 
     void OpenApp()
     {
-        // 如果在文件夹里，先关闭文件夹
+        // Close parent folder panel if this icon is inside a folder
         if (currentCell != null && currentCell.ownerFolderPanel != null)
         {
             var panel = currentCell.ownerFolderPanel;
@@ -374,7 +379,7 @@ public class AppIcon : MonoBehaviour
         // optional: bring app UI to front
         appView.transform.SetAsLastSibling();
 
-        // 打开时对话
+        // Optional dialogue when the app opens
         if (onOpenDialogue != null)
         {
             DialogueManager.Instance.StartDialogue(onOpenDialogue.lines);

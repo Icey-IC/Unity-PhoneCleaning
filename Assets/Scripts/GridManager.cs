@@ -6,30 +6,43 @@ public class CellIconMapping
 {
     public int row;
     public int col;
-    public AppIcon icon;       // 软件图标，和下面二选一
-    public FolderIcon folder;  // 文件夹图标，和上面二选一
+    public AppIcon icon;       // App icon (mutually exclusive with folder)
+    public FolderIcon folder;  // Folder icon (mutually exclusive with icon)
+}
+
+[System.Serializable]
+public class LargeIconMapping
+{
+    [Tooltip("Top-left cell of the 2x2 block")]
+    public int row;
+    public int col;
+    public LargeAppIcon icon;
 }
 
 public class GridManager : MonoBehaviour
 {
     public GameObject cellPrefab;
 
-    [Header("自定义行和列的坐标")]
+    [Header("Grid row/column world positions")]
     public float[] rowYPositions = new float[5] { 1.1f, 0f, -0.9f, -1.8f, -3.2f };
     public float[] columnXPositions = new float[5] { -1.6f, -0.8f, 0f, 0.8f, 1.6f };
 
-    [Header("最后一行特殊配置")]
+    [Header("Last row overrides")]
     public bool overrideLastRow = true;
     public float[] lastRowColumnXPositions = new float[4] { -1.2f, -0.4f, 0.4f, 1.2f };
 
-    [Header("初始布局配置")]
+    [Header("Initial layout (1x1 icons)")]
     public List<CellIconMapping> initialLayout = new List<CellIconMapping>();
+
+    [Header("Initial layout (2x2 large icons)")]
+    public List<LargeIconMapping> initialLargeLayout = new List<LargeIconMapping>();
 
     private GridCell[,] cellGrid;
 
     void Start()
     {
         GenerateGrid();
+        ApplyInitialLargeLayout();
         ApplyInitialLayout();
     }
 
@@ -54,14 +67,93 @@ public class GridManager : MonoBehaviour
         }
     }
 
+    public int GetColumnCountForRow(int row)
+    {
+        if (rowYPositions == null || row < 0 || row >= rowYPositions.Length)
+            return 0;
+
+        bool isLastRow = row == rowYPositions.Length - 1;
+        return (isLastRow && overrideLastRow && lastRowColumnXPositions != null && lastRowColumnXPositions.Length > 0)
+            ? lastRowColumnXPositions.Length
+            : columnXPositions.Length;
+    }
+
+    public GridCell GetCell(int row, int col)
+    {
+        if (cellGrid == null || row < 0 || col < 0
+            || row >= cellGrid.GetLength(0) || col >= cellGrid.GetLength(1))
+            return null;
+        return cellGrid[row, col];
+    }
+
+    /// <summary>Returns the 2x2 block with top-left at (row, col), or null if out of bounds or cells missing.</summary>
+    public GridCell[] TryGet2x2Block(int row, int col)
+    {
+        if (rowYPositions == null || row + 1 >= rowYPositions.Length)
+            return null;
+
+        int colsTop = GetColumnCountForRow(row);
+        int colsBottom = GetColumnCountForRow(row + 1);
+        if (col < 0 || col + 1 >= colsTop || col + 1 >= colsBottom)
+            return null;
+
+        GridCell c00 = GetCell(row, col);
+        GridCell c01 = GetCell(row, col + 1);
+        GridCell c10 = GetCell(row + 1, col);
+        GridCell c11 = GetCell(row + 1, col + 1);
+
+        if (c00 == null || c01 == null || c10 == null || c11 == null)
+            return null;
+
+        return new[] { c00, c01, c10, c11 };
+    }
+
+    public bool TryPlaceLargeIcon(LargeAppIcon icon, int row, int col)
+    {
+        if (icon == null)
+            return false;
+
+        GridCell[] cells = TryGet2x2Block(row, col);
+        if (cells == null)
+        {
+            Debug.LogWarning($"Large icon out of bounds at row={row}, col={col}");
+            return false;
+        }
+
+        foreach (var cell in cells)
+        {
+            if (!cell.IsEmpty)
+            {
+                Debug.LogWarning($"2x2 block at row={row}, col={col} is not empty; cannot place large icon");
+                return false;
+            }
+        }
+
+        icon.OccupyCells(cells);
+        return true;
+    }
+
+    void ApplyInitialLargeLayout()
+    {
+        foreach (var mapping in initialLargeLayout)
+        {
+            if (mapping.icon == null)
+            {
+                Debug.LogWarning($"Large icon layout at row={mapping.row}, col={mapping.col} has no icon assigned");
+                continue;
+            }
+
+            TryPlaceLargeIcon(mapping.icon, mapping.row, mapping.col);
+        }
+    }
+
     void ApplyInitialLayout()
     {
         foreach (var mapping in initialLayout)
         {
-            // 边界检查
             if (mapping.row >= rowYPositions.Length || mapping.col >= columnXPositions.Length)
             {
-                Debug.LogWarning($"初始布局配置越界：row={mapping.row}, col={mapping.col}");
+                Debug.LogWarning($"Initial layout out of bounds: row={mapping.row}, col={mapping.col}");
                 continue;
             }
 
@@ -69,14 +161,13 @@ public class GridManager : MonoBehaviour
 
             if (cell == null || !cell.IsEmpty)
             {
-                Debug.LogWarning($"Cell_{mapping.row}_{mapping.col} 不存在或已被占用");
+                Debug.LogWarning($"Cell_{mapping.row}_{mapping.col} is missing or already occupied");
                 continue;
             }
 
-            // 软件图标和文件夹图标二选一，两个都填或都不填时报警告
             if (mapping.icon != null && mapping.folder != null)
             {
-                Debug.LogWarning($"Cell_{mapping.row}_{mapping.col} 同时指定了icon和folder，请只填一个，已跳过");
+                Debug.LogWarning($"Cell_{mapping.row}_{mapping.col} has both icon and folder; assign only one");
                 continue;
             }
 
@@ -90,7 +181,7 @@ public class GridManager : MonoBehaviour
             }
             else
             {
-                Debug.LogWarning($"Cell_{mapping.row}_{mapping.col} 未指定任何图标");
+                Debug.LogWarning($"Cell_{mapping.row}_{mapping.col} has no icon or folder assigned");
             }
         }
     }

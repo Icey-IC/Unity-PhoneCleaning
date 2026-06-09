@@ -12,15 +12,20 @@ public class GridCell : MonoBehaviour
 
     public AppIcon currentIcon;
     public FolderIcon currentFolder;
+    public LargeAppIcon currentLargeIcon;
 
-    public bool IsEmpty => currentIcon == null && currentFolder == null;
+    public bool IsBlockedByLargeIcon => currentLargeIcon != null;
+    public bool IsEmpty => currentIcon == null && currentFolder == null && !IsBlockedByLargeIcon;
+
+    /// <summary>Whether a draggable app icon can be dropped on this cell.</summary>
+    public bool CanAcceptDrop => IsEmpty;
 
     void Awake()
     {
         sr = GetComponent<SpriteRenderer>();
         sr.color = normalColor;
 
-        // Cell 层级
+        // Cell render layer
         SetZ(-2f);
     }
 
@@ -33,7 +38,7 @@ public class GridCell : MonoBehaviour
 
     public void Highlight()
     {
-        if (IsEmpty)
+        if (CanAcceptDrop)
             sr.color = hoverColor;
     }
 
@@ -47,18 +52,20 @@ public class GridCell : MonoBehaviour
         currentIcon = icon;
 
         Vector3 pos = transform.position;
-        pos.z = -3f; // Icon层
+        pos.z = -3f; // Icon layer
 
         icon.transform.position = pos;
         icon.currentCell = this;
 
         sr.enabled = false;
+        SetColliderEnabled(false);
     }
 
     public void RemoveIcon()
     {
         currentIcon = null;
         sr.enabled = true;
+        SetColliderEnabled(true);
     }
 
     public void SetFolder(FolderIcon folder)
@@ -72,11 +79,34 @@ public class GridCell : MonoBehaviour
         folder.currentCell = this;
 
         sr.enabled = false;
+        SetColliderEnabled(false);
     }
 
     public void RemoveFolder()
     {
         currentFolder = null;
         sr.enabled = true;
+        SetColliderEnabled(true);
+    }
+
+    public void SetLargeIcon(LargeAppIcon icon)
+    {
+        currentLargeIcon = icon;
+        sr.enabled = false;
+        SetColliderEnabled(false);
+    }
+
+    public void RemoveLargeIcon()
+    {
+        currentLargeIcon = null;
+        sr.enabled = true;
+        SetColliderEnabled(true);
+    }
+
+    void SetColliderEnabled(bool enabled)
+    {
+        var col = GetComponent<Collider2D>();
+        if (col != null)
+            col.enabled = enabled;
     }
 }
