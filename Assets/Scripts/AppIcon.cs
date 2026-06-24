@@ -412,6 +412,15 @@ public class AppIcon : MonoBehaviour
 
     public void Uninstall()
     {
+        var tracker = LevelTaskTracker.Instance;
+        if (tracker != null && !tracker.IsAppMarkedForUninstall(appID))
+        {
+            tracker.ShowUninstallBlockedDialogue();
+            if (contextMenu != null)
+                contextMenu.Hide();
+            return;
+        }
+
         FolderPanel folderPanel = currentCell != null ? currentCell.ownerFolderPanel : null;
 
         if (currentCell != null)

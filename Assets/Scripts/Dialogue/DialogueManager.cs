@@ -11,28 +11,51 @@ public class DialogueManager : MonoBehaviour
     public GameObject playerBubblePrefab;
     public GameObject choiceBubblePrefab;
 
-    [Header("位置")]
+    [Header("Spawn points")]
     public Transform npcSpawnPoint;
     public Transform playerSpawnPoint;
     public Transform choiceSpawnRoot;
 
+    [Header("Input")]
+    [Tooltip("Covers the phone UI while dialogue is active; disabled when all lines finish.")]
+    public GameObject phoneInputBlocker;
+
     private Queue<DialogueLine> dialogueQueue = new Queue<DialogueLine>();
     private GameObject currentBubble;
+    private bool dialogueActive;
+
+    public bool IsDialogueActive => dialogueActive;
 
     void Awake()
     {
         Instance = this;
+        SetBlockerActive(false);
+    }
+
+    void SetBlockerActive(bool active)
+    {
+        dialogueActive = active;
+        if (phoneInputBlocker != null)
+            phoneInputBlocker.SetActive(active);
     }
 
     public void StartDialogue(List<DialogueLine> lines, System.Action onComplete = null)
     {
         dialogueQueue.Clear();
 
+        if (lines == null || lines.Count == 0)
+        {
+            SetBlockerActive(false);
+            onComplete?.Invoke();
+            return;
+        }
+
         foreach (var line in lines)
             dialogueQueue.Enqueue(line);
 
         onDialogueComplete = onComplete;
 
+        SetBlockerActive(true);
         ShowNext();
     }
 
@@ -43,6 +66,7 @@ public class DialogueManager : MonoBehaviour
 
         if (dialogueQueue.Count == 0)
         {
+            SetBlockerActive(false);
             onDialogueComplete?.Invoke();
             onDialogueComplete = null;
             return;
@@ -101,7 +125,7 @@ public class DialogueManager : MonoBehaviour
                 ShowNext();
             });
 
-            offsetY -= 120f; // UI 用像素，不是 1.2f
+            offsetY -= 120f; // UI ??????????? 1.2f
         }
     }
 

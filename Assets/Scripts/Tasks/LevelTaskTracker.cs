@@ -39,6 +39,10 @@ public class LevelTaskTracker : MonoBehaviour
     [Tooltip("App IDs that must be uninstalled (no AppIcon left with that id).")]
     public List<string> appIdsMustBeUninstalled = new List<string>();
 
+    [Tooltip("Player line when the user tries to uninstall an app not listed above.")]
+    [TextArea(1, 3)]
+    public string uninstallBlockedMessage = "This app should not be removed.";
+
     [Header("Notifications")]
     [Tooltip("If true, every AppIcon in the scene must have a matching entry below.")]
     public bool requireNotificationRuleForEveryApp = true;
@@ -99,6 +103,30 @@ public class LevelTaskTracker : MonoBehaviour
     {
         if (phoneScanDone)
             phoneCleanDone = true;
+    }
+
+    /// <summary>True when this appID is listed in appIdsMustBeUninstalled.</summary>
+    public bool IsAppMarkedForUninstall(string appId)
+    {
+        if (string.IsNullOrEmpty(appId) || appIdsMustBeUninstalled == null)
+            return false;
+
+        return appIdsMustBeUninstalled.Contains(appId);
+    }
+
+    public void ShowUninstallBlockedDialogue()
+    {
+        if (DialogueManager.Instance == null)
+            return;
+
+        DialogueManager.Instance.StartDialogue(new List<DialogueLine>
+        {
+            new DialogueLine
+            {
+                type = DialogueType.Player,
+                text = uninstallBlockedMessage
+            }
+        });
     }
 
     /// <summary>Call from buttons on the phone manager app view.</summary>

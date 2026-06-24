@@ -16,3 +16,6 @@ MonoBehaviour:
   - type: 0
     text: "\u6211\u6BCF\u4E00\u79D2\u90FD\u5728\u5E0C\u671B\u80FD\u7528\u4E0A\u5B83"
     options: []
+  - type: 0
+    text: "\u7ED9\u6211\u653E\u5230\u6587\u4EF6\u5939\u5916\u9762\u5427"
+    options: []
